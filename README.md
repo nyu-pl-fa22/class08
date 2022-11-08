@@ -395,7 +395,7 @@ benefits of a strong static type system without requiring the
 programmer to provide explicit type annotations in the program.
 
 The algorithm is guided by the syntax of expressions, taking advantage
-of the fact that the constant literals, inbuilt operators, and value
+of the fact that the constant literals, built-in operators, and value
 constructors from which expressions are built impose constraints on
 the types that the values of these expressions may have. Technically,
 the algorithm works by deriving a system of type equality constraints
@@ -1094,7 +1094,7 @@ that is known as *Curry-Howard Correspondence*. Roughly speaking, the
 Curry-Howard Correspondence establishes an equivalence between
 inferring an expression for a given type and the problem of proving
 the validity of a logical formula obtained from that type. In other
-words, types are logical formulas and programs are proofs.
+words, types correspond to logical formulas and programs to proofs.
 
 Specifically, the polymorphic types that we are dealing with in this
 problem can be interpreted as formulas in propositional logic where
@@ -1163,19 +1163,19 @@ logic by proving the validity of the formula corresponding to `f`'s
 purported type and then translate that proof to a corresponding
 `OCaml` function.
 
+Here is an another example. Consider a function `g` of type
 
 ```ocaml
 g: ('a, 'b) either * ('a -> 'c) * ('b -> 'c) -> 'c
 ```
  
-can be viewed as the propositional formula
+This type can be viewed as the propositional formula
 
  
 ```
 ('a || 'b) && ('a => 'c) && ('b => 'c) => 'c
 ```
  
-
 which states that if
 
 (1) `'a` or `'b` is `true`, and
