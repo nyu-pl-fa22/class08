@@ -305,7 +305,7 @@ Even for closely related languages, there can be subtle differences in
 these details of the type system. For instance, in SML record values
 are typed structurally. So translating the previous example with
 records from OCaml to SML yields:
-```ocaml
+```sml
 type a = {f: int}
 type b = {f: int}
 
