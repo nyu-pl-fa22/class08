@@ -108,33 +108,33 @@ errors is considered to be *well-typed*.
 Languages differ greatly in the way they implement type
 checking. These approaches can be loosely categorized into
 
-* strong vs. weak type systems
 * static vs. dynamic type systems
+* strong vs. weak type systems
+
+In a static type system, the compiler ensures that the type rules are
+obeyed at compile-time whereas in dynamic type systems, type checking
+is performed at run-time while the program executes.
 
 A *strongly typed* language does not allow expressions to be used in a
 way inconsistent with their types (no loopholes). A strongly typed
 language thus guarantees that all type errors are detected (either at
-compile-time or at run-time). Examples of strongly typed languages
+statically or dynamically). Examples of strongly typed languages
 include Java, Scala, OCaml, Python, Lisp, and Scheme.
 
 On the other hand, a *weakly typed* language allows many ways to
 bypass the type system (e.g., by using pointer arithmetic or unchecked
 casts). In such languages, type errors can go undetected, causing
-e.g. data corruption and other unpredictable behavior when the program
+data corruption, loss of control-flow integrity, etc. when the program
 is executed. C and C++ are poster children for weakly typed
 languages. Their motto is: "Trust the programmer".
-
-The other high-level classification is to distinguish between static
-and dynamic type system. In a static type system, the compiler ensures
-that the type rules are obeyed at compile-time whereas in dynamic type
-systems, type checking is performed at run-time while the program
-executes.
 
 Advantages of static typing over dynamic typing:
 
 * more efficient: code runs faster because no run-time type checks are
   needed; compiler has more opportunities for optimization because it
-  has more information about what the program does.
+  has more information about what the program does. This can be
+  mitigated using just-in-time compilation techniques for dynamically
+  typed languages.
 
 * better error checking: type errors are detected earlier; compiler
   can guarantee that no type errors will occur (if language is also
@@ -156,16 +156,21 @@ Advantages of dynamic typing over static typing:
   annotation overhead and the mental gymnastics that the programmer
   has to perform to get the code through the static type checker.
   
+The choice between a dynamically typed or statically typed language
+should be informed by the application domain and the complexity of the
+programming task.
   
 It is often considered easier to write code in dynamically typed
-languages. However, as the size and complexity of a software system
-increases, the advantages of dynamic typing turn into disadvantages
-because type errors become harder to detect and debug. Hence,
-statically typed languages are often preferred for large and complex
-projects. Also, for performance critical code, dynamic typing is often
-too costly (because it often involves expensive run-time type checks).
+languages because the programmer can run and experiment with the code
+without having to first get it past a type checker. However, as the
+size and complexity of a software system increases, the advantages of
+dynamic typing turn into disadvantages because type errors become
+harder to detect and debug. Hence, statically typed languages are
+often preferred for large and complex projects. Also, for performance
+critical code, dynamic typing is often too costly (because it can
+involve expensive run-time type checks).
 
-The distinction between weak/strong and static/dynamic is not always
+The distinction between static and dynamic type systems is not always
 clear cut. For instance, Java is mostly statically typed but certain
 type checks are performed at run-time due to deliberate loopholes in
 the static type checker. Some so-called *gradually typed* languages
@@ -173,12 +178,13 @@ the static type checker. Some so-called *gradually typed* languages
 static and dynamic type checking for different parts of a single
 program.
 
-Similarly, the distinction between weak and strong type systems is not
-always completely clear and some people use slightly different
-definitions of what strong vs. weak typing means. For instance, the
-notion of type compatibility in JavaScript is so permissive that the
-language is often considered to be weakly typed, even though, according
-to the definition given above, JavaScript is strongly typed.
+Also, there are different definitions of what differentiates a weakly
+and strongly typed programming language. The definition given above is
+the one preferred in programming language research, but practitioners
+often make a less formal distinction. For instance, the notion of type
+compatibility in JavaScript is so permissive that the language is
+often considered to be weakly typed, even though, according to the
+definition given above, JavaScript is actually strongly typed.
 
 ### Type Inference
 
@@ -228,18 +234,87 @@ two basic ways of how to define type equivalence: *nominal typing* and
 *structural typing*:
 
 * Nominal typing: two types are the same only if they have the same name
- (each type definition introduces a new type)
+  (each type definition introduces a new type)
  
- * *strict*: aliases (i.e. declaring a type equal to another type) are distinct
- * *loose*: aliases are equivalent
-
-* Structural typing: two types are equivalent if they have the same
-  structure. That is, they are structurally identical when viewed as
-  terms constructed from primitive types and type constructors.
-
+  For example, consider the following Java classes:
+ 
+  ```java
+  class A {
+    int f;
+  }
+ 
+  class B {
+    int f;
+  }
+  ```
+ 
+  Instances of class `A` and class `B` are effectively
+  indistinguishable: they both have a single `int` field `f`. (We here
+  ignore matters related to *reflection*.) Yet, the two classes define
+  distinct types.
+ 
+* Structural typing: types don't have to be given names. Instead, two
+  types are equivalent if they have the same structure. That is, they
+  are structurally identical when viewed as terms constructed from
+  primitive types and type constructors.
+  
+  For example, in OCaml, functions are typed structurally.
+  
 Most languages use a mixture of nominal and structural typing. For
-instance, in Scala, object types use nominal typing but generic types
-use structural typing.
+example, in OCaml functions are typed structurally as pointed out
+before. However, records are typed nominally similar to classes in
+Java.
+
+Many languages also allow a new name to be given to an existing
+type. Such a type definition is called a *type alias*. Type aliasing
+can be treated *strictly* or *loosely*:
+
+* *strict*: aliases for the same type define distinct types
+* *loose*: aliases for the same type are equivalent.
+
+The distinction between strict and loose type aliasing can sometimes
+be confusing when combined with nominal typing, in particular, if the
+language syntax does not immediately differentiate between type
+aliasing and nominal type definitions.
+
+For example, consider the following OCaml code:
+
+```ocaml
+type a = {f: int}
+type b = {f: int}
+
+let foo (x: a) = x.f
+let bar (x: b) = foo x
+```
+This program is not well-typed. This is because the first two lines are
+nominal definitions of distinct record types `a` and `b`.
+
+On the other hand, the following program is well-typed:
+```ocaml
+type a = int
+type b = int
+
+let foo (x: a) = x
+let bar (x: b) = foo x
+```
+Here, the first two lines define `a` and `b` as type aliases of the
+type `int`. Since OCaml uses loose type aliasing, the types `a` and
+`b` are considered to be equivalent.
+
+Even for closely related languages, there can be subtle differences in
+these details of the type system. For instance, in SML record values
+are typed structurally. So translating the previous example with
+records from OCaml to SML yields:
+```ocaml
+type a = {f: int}
+type b = {f: int}
+
+fun foo (x: a) = #f x
+fun bar (x: b) = foo x
+```
+This program is well-typed. Here, `{f: int}` is itself a type and `a`
+and `b` are just aliases of this type.
+
 
 ### Type compatibility
 
