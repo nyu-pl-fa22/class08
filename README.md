@@ -345,14 +345,17 @@ the type `Double`.
 
 To account for the different representation of `Int` and `Double`
 values, the compiler will generate code that performs an implicit
-conversion of the `Int` value `1` to the `Double` value `1.0` (in this
-case, the conversion can be done statically at compile-time but this
-is not possible in general if e.g. `1` is replaced by an `Int`
-variable). This kind of implicit conversion code is referred to as a
+conversion of the `Int` value `1` to the `Double` value `1.0`. In
+general, the implicit conversion will change the underlying data
+representation of the converted value. In our example, the conversion
+can be done statically at compile-time but this is not possible in
+general if e.g. `1` is replaced by an `Int` variable. The implicit
+conversion code inserted by the compiler is also referred to as a
 *type coercion*.
 
-Determining if and when type coercions should be applied is a major
-design aspect that distinguishes the type systems of different
+Determining if and when type conversions can be applied and whether
+they are implicit or must be inserted explicitly by the programmer is
+a major design aspect that distinguishes the type systems of different
 programming languages.
 
 We will start by studying these concepts related to types and type
