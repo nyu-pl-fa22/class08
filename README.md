@@ -1086,11 +1086,13 @@ type ('a, 'b) either =
   | Right of 'b
 ```
 
+Note that this type corresponds to the type [`('a, 'b) Either.t`](https://v2.ocaml.org/api/Either.html) defined in the OCaml standard library.
+
 The type `('a, 'b) either` is parametric in two types: `'a` and
-`'b`. It's values take the form `Left a` where `a` is a value of type
-`'a` and `Right b` where `b` is a value of type `'b`. That is, `('a,
-'b) either` can be viewed as the disjoint union of the types `'a` and
-`'b`.
+`'b`. It's values either take the form `Left a` where `a` is a value
+of type `'a` or `Right b` where `b` is a value of type `'b`. That is,
+`('a, 'b) either` can be viewed as representing the disjoint union of
+the values represented by types `'a` and `'b`.
 
 Now let us consider the following type signature of a purported
 function `f`:
@@ -1148,8 +1150,15 @@ let f (x, y) =
 ```
 
 Note that the match cases enumerate all the possible combinations of
-the values that `x` and `y` can take. Moreover, in each case, we
-return a value of type `('a, 'b * 'c) either`.
+the values that `x` and `y` can take. Now observe that the first three
+match alternatives return a value of type `('a, 'd) either` for some
+unspecified type `'d`. Likewise, the fourth match alternative returns
+a value of type `('e, 'b * 'c) either` for some unspecified type
+`'e`. However, since all these match alternatives belong to the same
+match expression, they must return a value of the same type. That is
+`('e, 'b * 'c) either = ('a, 'd) either` and therefore `'e = 'a` and
+`'d = 'b * 'c`. It follows that the entire match expression has type
+`('a, 'b * 'c) either` as desired.
 
 The above definition can be further simplified as follows:
 
@@ -1166,18 +1175,18 @@ no guessing involved. The goal of this exercise is to train your
 intuition in how to use these polymorphic types.
 
  
-One observation that might help understanding this problem better is
-to look at it from a different perspective by exploiting something
-that is known as *Curry-Howard Correspondence*. Roughly speaking, the
-Curry-Howard Correspondence establishes an equivalence between
-inferring an expression for a given type and the problem of proving
-the validity of a logical formula obtained from that type. In other
-words, types correspond to logical formulas and programs to proofs.
+One observation that might help to understand this problem better is
+to look at it from a different perspective by exploiting the so-called
+*Curry-Howard Correspondence*. Roughly speaking, the Curry-Howard
+Correspondence establishes an equivalence between inferring an
+expression for a given type and the problem of proving the validity of
+a logical formula. In other words, types correspond to logical
+formulas and programs to proofs.
 
 Specifically, the polymorphic types that we are dealing with in this
 problem can be interpreted as formulas in propositional logic where
 
-* Type variables like `'a` and `'b` correspond to proposition
+* Type variables like `'a` and `'b` correspond to propositional
   variables that take on the truth values `true` or `false`.
 
 * Function types `'a -> 'b` correspond to logical implications
@@ -1203,18 +1212,19 @@ that we considered above can be viewed as the propositional formula
 ('a || 'b) && ('a || 'c) => 'a || 'b && 'c
 ```
 
-which states that if `'a || 'b` is `true` and `'a || 'c` is `true`
+This formula states that if `'a || 'b` is `true` and `'a || 'c` is `true`
 then `'a` is `true` or both `'b` and `'c` are `true`. In other words,
 logical conjunction distributes over logical disjunction. This formula
 is valid, i.e., it evaluates to `true` regardless of what truth values
 we assign to `'a`, `'b`, and `'c`.
 
-This property can be proven using logical deduction. To this end, we
-start by assuming that the left-hand side of the implication is
-`true`, which because it is a conjunction means that both `('a || 'b)`
-and `('a || 'c)` must be `true`. We now do case analysis on what we
-know about these two formulas. From the fact that `('a || 'b)` is true
-we know that either `'a` is `true` or `'b` is `'true`:
+The validity of the formula can be proven using logical deduction as
+follows. We start by assuming that the left-hand side of the
+implication is `true`. Because the left-hand side is a conjunction,
+this means that both `('a || 'b)` and `('a || 'c)` must be `true`. We
+now do case analysis on what we know about these two formulas. From
+the fact that `('a || 'b)` is true we know that either `'a` is `true`
+or `'b` is `'true`:
 
 * Case 1 (`'a'` is `true`): then it immediately follows that `('a || 'b
   && 'c)` is also `true`.
@@ -1238,7 +1248,7 @@ components `x` and `y`. Likewise, the case analysis on `(a || 'b)` and
 That is, when solving the problem of inferring a definition for the
 function `f` that has the given type, we can solve this problem in
 logic by proving the validity of the formula corresponding to `f`'s
-purported type and then translate that proof to a corresponding
+purported type and then translate that proof back to a corresponding
 `OCaml` function.
 
 Here is an another example. Consider a function `g` of type
