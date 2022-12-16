@@ -925,7 +925,7 @@ rename `'y ↦ 'a`, `x ↦ 'b`, and `'e ↦ 'c`, then we get the type:
 This is exactly the type that the OCaml compiler infers for `flip`.
 
 
-#### Limitations of Type System
+#### Limitations of the Type System
 
 HM guarantees at compile-time that a program will not *go wrong* when
 it is executed if it passes the type checker. Here, "going wrong"
@@ -1133,7 +1133,7 @@ expression `e` that constructs such values from the parameters `x` and
 `y` of `f`.
 
 Now, the required type `('a, 'b) either` has values of the shape 
-`Left a1` and `Left b` for values `a1: 'a` and `b: 'b`. Likewise, `y`
+`Left a1` and `Right b` for values `a1: 'a` and `b: 'b`. Likewise, `y`
 has values `Left a2` and `Right c` for `a2: 'a` and `c: 'c`. To
 construct values of the shape `Left a` or `Right (b, c)` we just need
 to consider all the possible combinations in which the values of the
